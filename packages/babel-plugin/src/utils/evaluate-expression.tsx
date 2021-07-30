@@ -4,13 +4,13 @@ import traverse from '@babel/traverse';
 import { Metadata } from '../types';
 
 import {
-  resolveBindingNode,
-  getMemberExpressionMeta,
-  getValueFromObjectExpression,
   babelEvaluateExpression,
-  wrapNodeInIIFE,
+  getMemberExpressionMeta,
   getPathOfNode,
-  isCompiledCSSTemplateLiteral,
+  getValueFromObjectExpression,
+  isCompiledKeyframesCallExpression,
+  resolveBindingNode,
+  wrapNodeInIIFE,
 } from './ast';
 
 const createResultPair = (value: t.Expression, meta: Metadata) => ({
@@ -25,7 +25,7 @@ const createResultPair = (value: t.Expression, meta: Metadata) => ({
  * passing the `color` identifier to this function would return `'blue'`.
  *
  * @param expression Expression we want to interrogate.
- * @param state Babel state - should house options and meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const traverseIdentifier = (expression: t.Identifier, meta: Metadata) => {
   let value: t.Node | undefined | null = undefined;
@@ -51,7 +51,7 @@ const traverseIdentifier = (expression: t.Identifier, meta: Metadata) => {
  * return `value` as `10`.
  * @param expression Expression we want to interrogate.
  * @param accessPath An array of nested object keys
- * @param meta Meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const evaluateObjectExpression = (
   expression: t.Expression,
@@ -79,7 +79,7 @@ const evaluateObjectExpression = (
  *
  * @param expression Expression we want to interrogate.
  * @param accessPath An array of nested object keys
- * @param meta Meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const evaluateCallExpressionBindingMemberExpression = (
   expression: t.Expression,
@@ -113,7 +113,7 @@ const evaluateCallExpressionBindingMemberExpression = (
  *
  * @param expression Expression we want to interrogate.
  * @param accessPath An array of nested object keys
- * @param meta Meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const evaluateIdentifierBindingMemberExpression = (
   expression: t.Expression,
@@ -141,7 +141,7 @@ const evaluateIdentifierBindingMemberExpression = (
  * passing the `colors` identifier to this function would return `'blue'`.
  *
  * @param expression Expression we want to interrogate.
- * @param state Babel state - should house options and meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const traverseMemberExpression = (expression: t.MemberExpression, meta: Metadata) => {
   let value: t.Node | undefined | null = undefined;
@@ -182,7 +182,7 @@ const traverseMemberExpression = (expression: t.MemberExpression, meta: Metadata
  * passing the `size` identifier to this function would return `10` (it will recursively evaluate).
  *
  * @param expression Expression we want to interrogate.
- * @param state Babel state - should house options and meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const traverseFunction = (expression: t.Function, meta: Metadata) => {
   let value: t.Node | undefined | null = undefined;
@@ -215,7 +215,7 @@ const traverseFunction = (expression: t.Function, meta: Metadata) => {
  * we will look for its binding in own scope first, then parent scope.
  *
  * @param expression Expression we want to interrogate.
- * @param meta Meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const traverseCallExpression = (expression: t.CallExpression, meta: Metadata) => {
   const callee = expression.callee;
@@ -326,7 +326,7 @@ const traverseCallExpression = (expression: t.CallExpression, meta: Metadata) =>
  * and object expressions.
  *
  * @param expression Expression we want to interrogate.
- * @param state Babel state - should house options and meta data used during the transformation.
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const evaluateExpression = (
   expression: t.Expression,
@@ -334,6 +334,12 @@ export const evaluateExpression = (
 ): { value: t.Expression; meta: Metadata } => {
   let value: t.Node | undefined | null = undefined;
   let updatedMeta: Metadata = meta;
+
+  // --------------
+  // NOTE: We are recursively calling evaluateExpression() which is then going to try and evaluate it
+  // multiple times. This may or may not be a performance problem - when looking for quick wins perhaps
+  // there is something we could do better here.
+  // --------------
 
   if (t.isIdentifier(expression)) {
     ({ value, meta: updatedMeta } = traverseIdentifier(expression, updatedMeta));
@@ -345,26 +351,20 @@ export const evaluateExpression = (
     ({ value, meta: updatedMeta } = traverseCallExpression(expression, updatedMeta));
   }
 
-  if (t.isStringLiteral(value) || t.isNumericLiteral(value) || t.isObjectExpression(value)) {
+  if (
+    t.isStringLiteral(value) ||
+    t.isNumericLiteral(value) ||
+    t.isObjectExpression(value) ||
+    t.isTaggedTemplateExpression(value) ||
+    // TODO this should be more generic
+    (value && isCompiledKeyframesCallExpression(value, updatedMeta))
+  ) {
     return createResultPair(value, updatedMeta);
   }
 
-  // --------------
-  // NOTE: We are recursively calling evaluateExpression() which is then going to try and evaluate it
-  // multiple times. This may or may not be a performance problem - when looking for quick wins perhaps
-  // there is something we could do better here.
-  // --------------
-
   if (value) {
-    if (isCompiledCSSTemplateLiteral(value, updatedMeta)) {
-      // !! NOT GREAT !!
-      // Sometimes we want to return the evaluated value instead of the original expression
-      // however this is an edge case. When we implement keyframes we'll want to re-think this a little.
-      return createResultPair(value, updatedMeta);
-    }
-
     // If we fail to statically evaluate `value` we will return `expression` instead.
-    // It's preferrable to use the identifier than its result if it can't be statically evaluated.
+    // It's preferable to use the identifier than its result if it can't be statically evaluated.
     // E.g. say we got the result of an identifier `foo` as `bar()` -- its more preferable to return
     // `foo` instead of `bar()` for a single source of truth.
     const babelEvaluatedNode = babelEvaluateExpression(value, updatedMeta, expression);

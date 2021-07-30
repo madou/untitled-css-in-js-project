@@ -11,6 +11,14 @@ const transform = (code: string) => {
 };
 
 describe('styled component behaviour', () => {
+  beforeAll(() => {
+    process.env.AUTOPREFIXER = 'off';
+  });
+
+  afterAll(() => {
+    delete process.env.AUTOPREFIXER;
+  });
+
   it('should generate styled object component code', () => {
     const actual = transform(`
       import { styled, ThemeProvider } from '@compiled/react';
@@ -317,6 +325,35 @@ describe('styled component behaviour', () => {
             <C{...props}style={{...style,\\"--_3rbzda\\":ix(isLoading?colors.N20:colors.N40),\\"--_xru1br\\":ix(loading?colors.N50:colors.N10),\\"--_8sf962\\":ix(props.loading?colors.N100:colors.N200)}}ref={ref}className={ax([\\"_bfhk14r0 _syaz1g46 _1h6dk60n\\",props.className])}/>
           </CC>);if(process.env.NODE_ENV!=='production'){BadgeSkeleton.displayName='BadgeSkeleton';}"
     `);
+  });
+
+  it('should handle an animation that references an inline @keyframes', () => {
+    const actual = transform(`
+      import { styled } from '@compiled/react';
+
+      const ListItem = styled.div\`
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+
+        animation: fadeOut 2s ease-in-out;
+      \`;
+    `);
+
+    expect(actual).toIncludeMultiple([
+      'const _2="._y44vk4ag{animation:fadeOut 2s ease-in-out}"',
+      'const _="@keyframes fadeOut{0%{opacity:1}50%{opacity:0.5}to{opacity:0}}"',
+      '<CS>{[_,_2]}</CS>',
+      'className={ax(["_y44vk4ag",props.className])}'
+    ]);
   });
 
   it('should not blow up with an expanding property', () => {

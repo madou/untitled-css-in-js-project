@@ -16,7 +16,7 @@ export const transform = (code: string): string => {
   }
 
   const { code: babelCode } = fileResult;
-  const ifIndex = babelCode.indexOf('if (');
+  const ifIndex = babelCode.indexOf('if (process.env.NODE_ENV');
   // Remove the imports from the code, and the styled components display name
   const snippet = babelCode
     .substring(babelCode.indexOf('const'), ifIndex === -1 ? babelCode.length : ifIndex)

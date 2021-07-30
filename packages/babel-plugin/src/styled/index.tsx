@@ -113,8 +113,8 @@ const extractStyledDataFromNode = (
  *
  * `styled.div({})`
  *
- * @param path Babel path - expects to be a tagged template or call expression.
- * @param state Babel state - should house options and meta data used during the transformation.
+ * @param path {NodePath} The tagged template or call expression
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const visitStyledPath = (
   path: NodePath<t.TaggedTemplateExpression> | NodePath<t.CallExpression>,

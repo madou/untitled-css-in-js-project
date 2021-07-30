@@ -30,7 +30,7 @@ export const transformCss = (css: string): { sheets: string[]; classNames: strin
       expandShorthands(),
       atomicifyRules({ callback: (className) => classNames.push(className) }),
       sortAtRulePseudos(),
-      autoprefixer(),
+      ...(process.env.AUTOPREFIXER === 'off' ? [] : [autoprefixer()]),
       whitespace,
       extractStyleSheets({ callback: (sheet: string) => sheets.push(sheet) }),
     ]).process(css, {

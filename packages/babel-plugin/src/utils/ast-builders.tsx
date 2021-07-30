@@ -37,8 +37,8 @@ export interface StyledTemplateOpts {
  * Hoists a sheet to the top of the module if its not already there.
  * Returns the referencing identifier.
  *
- * @param sheet Stylesheet
- * @param meta Plugin metadata
+ * @param sheet {string} Stylesheet
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const hoistSheet = (sheet: string, meta: Metadata): t.Identifier => {
   if (meta.state.sheets[sheet]) {
@@ -289,8 +289,8 @@ export const buildDisplayName = (identifier: string, displayName: string = ident
 /**
  * Will return a generated AST for a Styled Component.
  *
- * @param opts Template options
- * @param meta Plugin metadata
+ * @param opts {StyledTemplateOpts} Template options
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 const styledTemplate = (opts: StyledTemplateOpts, meta: Metadata): t.Node => {
   const nonceAttribute = meta.state.opts.nonce ? `nonce={${meta.state.opts.nonce}}` : '';
@@ -360,8 +360,8 @@ const styledTemplate = (opts: StyledTemplateOpts, meta: Metadata): t.Node => {
  * This is primarily used for CSS prop and ClassNames apis.
  *
  * @param node Originating node
- * @param sheets Stylesheets
- * @param meta Metadata
+ * @param sheets {string[]} Stylesheets
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const compiledTemplate = (node: t.Expression, sheets: string[], meta: Metadata): t.Node => {
   const nonceAttribute = meta.state.opts.nonce ? `nonce={${meta.state.opts.nonce}}` : '';
@@ -420,9 +420,9 @@ export const conditionallyJoinExpressions = (
 /**
  * Returns a Styled Component AST.
  *
- * @param tag Styled tag either an inbuilt or user define
- * @param cssOutput CSS and variables to place onto the component
- * @param meta Plugin metadata
+ * @param tag {Tag} Styled tag either an inbuilt or user define
+ * @param cssOutput {CSSOutput} CSS and variables to place onto the component
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const buildStyledComponent = (tag: Tag, cssOutput: CSSOutput, meta: Metadata): t.Node => {
   const { sheets, classNames } = transformCss(cssOutput.css.map((x) => getItemCss(x)).join(''));
@@ -470,7 +470,7 @@ export const getPropValue = (
 /**
  * Transforms CSS output into `sheets` and `classNames` ASTs.
  *
- * @param cssOutput CSSOutput
+ * @param cssOutput {CSSOutput}
  */
 const transformItemCss = (cssOutput: CSSOutput) => {
   const sheets: string[] = [];
@@ -491,7 +491,9 @@ const transformItemCss = (cssOutput: CSSOutput) => {
 
       case 'unconditional':
       default:
-        classNames.push(t.stringLiteral(className));
+        if (className) {
+          classNames.push(t.stringLiteral(className));
+        }
         break;
     }
   });
@@ -504,7 +506,7 @@ const transformItemCss = (cssOutput: CSSOutput) => {
  *
  * @param node Originating node
  * @param cssOutput CSS and variables to place onto the component
- * @param meta Plugin metadata
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const buildCompiledComponent = (
   node: t.JSXElement,
