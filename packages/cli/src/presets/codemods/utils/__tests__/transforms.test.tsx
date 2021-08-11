@@ -11,14 +11,14 @@ describe('transforms', () => {
     it('should build transform path', () => {
       const parsedPath = {
         base: 'index.tsx',
-        dir: 'node_modules/@compiled/react/dist/codemods/styled-components-to-compiled',
+        dir: 'node_modules/@compiled/codemods/dist/transforms/styled-components-to-compiled',
         ext: '.tsx',
         name: 'index',
         root: '',
       };
 
       expect(getTransformPath(parsedPath)).toEqual(
-        'node_modules/@compiled/react/dist/codemods/styled-components-to-compiled/index.tsx'
+        'node_modules/@compiled/codemods/dist/transforms/styled-components-to-compiled/index.tsx'
       );
     });
   });
@@ -28,22 +28,22 @@ describe('transforms', () => {
       castToJestMock(globSync).mockImplementationOnce(
         () =>
           [
-            'node_modules/@compiled/react/dist/codemods/styled-components-to-compiled/index.tsx',
-            'node_modules/@compiled/react/dist/codemods/emotion-to-compiled/index.tsx',
+            'node_modules/@compiled/codemods/dist/transforms/styled-components-to-compiled/index.tsx',
+            'node_modules/@compiled/codemods/dist/transforms/emotion-to-compiled/index.tsx',
           ] as any
       );
 
       expect(getTransforms()).toEqual([
         {
           base: 'index.tsx',
-          dir: 'node_modules/@compiled/react/dist/codemods/emotion-to-compiled',
+          dir: 'node_modules/@compiled/codemods/dist/transforms/emotion-to-compiled',
           ext: '.tsx',
           name: 'index',
           root: '',
         },
         {
           base: 'index.tsx',
-          dir: 'node_modules/@compiled/react/dist/codemods/styled-components-to-compiled',
+          dir: 'node_modules/@compiled/codemods/dist/transforms/styled-components-to-compiled',
           ext: '.tsx',
           name: 'index',
           root: '',

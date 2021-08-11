@@ -4,6 +4,7 @@
     { "path": "babel-plugin/tsconfig.json" },
     { "path": "babel-plugin-strip-runtime/tsconfig.json" },
     { "path": "cli/tsconfig.json" },
+    { "path": "codemods/tsconfig.json" },
     { "path": "css/tsconfig.json" },
     { "path": "jest/tsconfig.json" },
     { "path": "parcel-transformer/tsconfig.json" },

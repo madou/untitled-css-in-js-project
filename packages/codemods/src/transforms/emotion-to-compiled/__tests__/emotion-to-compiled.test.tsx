@@ -3,12 +3,12 @@ jest.disableAutomock();
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const defineInlineTest = require('jscodeshift/dist/testUtils').defineInlineTest;
 
-import transformer from '../emotion-to-compiled';
+import { transformer } from '../emotion-to-compiled';
 
 describe('emotion-to-compiled transformer', () => {
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     "import styled from '@emotion/styled';",
     "import { styled } from '@compiled/react';",
     'it transforms default @emotion/styled imports'
@@ -16,7 +16,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     "import sc from '@emotion/styled';",
     "import { styled as sc } from '@compiled/react';",
     'it transforms default with different name than "styled" @emotion/styled imports'
@@ -24,7 +24,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     import { ClassNames } from '@emotion/core';
     `,
@@ -36,7 +36,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx, ClassNames } from '@emotion/core';
@@ -50,7 +50,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css as c, jsx, ClassNames as CN } from '@emotion/core';
@@ -64,7 +64,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx, ClassNames } from '@emotion/core';
@@ -79,7 +79,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css as c, jsx, ClassNames as CN } from '@emotion/core';
@@ -94,7 +94,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -108,7 +108,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -147,7 +147,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css as c, jsx } from '@emotion/core';
@@ -186,7 +186,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { jsx } from '@emotion/core';
@@ -219,7 +219,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { jsx } from '@emotion/core';
@@ -252,7 +252,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import _ from 'lodash';
@@ -268,7 +268,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import styled from '@emotion/styled';
@@ -283,7 +283,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -300,7 +300,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -318,7 +318,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -336,7 +336,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { css, jsx } from '@emotion/core';
@@ -354,7 +354,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { ClassNames, CSSObject, css as c, jsx } from '@emotion/core';
@@ -412,7 +412,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     // @top-level comment
 
@@ -435,7 +435,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     // @top-level comment
 
@@ -458,7 +458,7 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     `
     /** @jsx jsx */
     import { ClassNames as CN, css as c, jsx } from '@emotion/core';
@@ -518,9 +518,72 @@ describe('emotion-to-compiled transformer', () => {
 
   defineInlineTest(
     { default: transformer, parser: 'tsx' },
-    {},
+    { pluginModules: [] },
     "import * as React from 'react';",
     "import * as React from 'react';",
     'it should not transform when emotion imports are not present'
+  );
+
+  defineInlineTest(
+    { default: transformer, parser: 'tsx' },
+    {
+      pluginModules: [
+        {
+          migrationTransform: {
+            buildImport: ({ j }) =>
+              j.expressionStatement(
+                j.callExpression(j.memberExpression(j.identifier('console'), j.identifier('log')), [
+                  j.literal('Bring back Netscape'),
+                ])
+              ),
+          },
+        },
+      ],
+    },
+    "import styled from '@emotion/styled';",
+    "console.log('Bring back Netscape');",
+    'it should use the buildImport from the plugin'
+  );
+
+  defineInlineTest(
+    { default: transformer, parser: 'tsx' },
+    {
+      pluginModules: [
+        {
+          migrationTransform: {
+            insertBeforeImport: ({ j }) =>
+              j.expressionStatement(
+                j.callExpression(j.memberExpression(j.identifier('console'), j.identifier('log')), [
+                  j.literal('Bring back Netscape'),
+                ])
+              ),
+          },
+        },
+      ],
+    },
+    "import styled from '@emotion/styled';",
+    "console.log('Bring back Netscape');\nimport { styled } from '@compiled/react';",
+    'it should use the insertBeforeImport from the plugin'
+  );
+
+  defineInlineTest(
+    { default: transformer, parser: 'tsx' },
+    {
+      pluginModules: [
+        {
+          migrationTransform: {
+            insertAfterImport: ({ j }) =>
+              j.expressionStatement(
+                j.callExpression(j.memberExpression(j.identifier('console'), j.identifier('log')), [
+                  j.literal('Bring back Netscape'),
+                ])
+              ),
+          },
+        },
+      ],
+    },
+    "import styled from '@emotion/styled';",
+    "import { styled } from '@compiled/react';\nconsole.log('Bring back Netscape');",
+    'it should use the insertAfterImport from the plugin'
   );
 });

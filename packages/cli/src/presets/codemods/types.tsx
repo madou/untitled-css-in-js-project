@@ -6,6 +6,7 @@ export interface CodemodOptions {
   parser?: string;
   extensions?: string;
   ignorePattern?: string;
+  plugins?: string;
 }
 
 /**
@@ -14,5 +15,7 @@ export interface CodemodOptions {
 export interface Choice<TName = string> {
   name: TName;
   message: string;
+  value?: string;
   hint?: string;
+  validate?: (value: string) => boolean;
 }

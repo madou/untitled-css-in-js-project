@@ -8,8 +8,7 @@ import core, {
   ObjectPattern,
 } from 'jscodeshift';
 
-import { COMPILED_IMPORT_PATH } from '../constants';
-
+import { COMPILED_IMPORT_PATH } from '../../constants';
 import {
   hasImportDeclaration,
   getImportDeclarationCollection,
@@ -20,7 +19,9 @@ import {
   replaceImportDeclaration,
   mergeImportSpecifiersAlongWithTheirComments,
   addCommentBefore,
-} from '../codemods-helpers';
+  withPlugin,
+} from '../../codemods-helpers';
+import { CodemodPlugin } from '../../plugins/types';
 
 const imports = {
   compiledStyledImportName: 'styled',
@@ -200,9 +201,14 @@ const mergeCompiledImportSpecifiers = (j: core.JSCodeshift, collection: Collecti
   });
 };
 
-const transformer = (fileInfo: FileInfo, { jscodeshift: j }: API, options: Options): string => {
+export const transformer = (
+  fileInfo: FileInfo,
+  { jscodeshift: j }: API,
+  options: Options
+): string => {
   const { source } = fileInfo;
   const collection = j(source);
+  const plugins: Array<CodemodPlugin> = options.pluginModules;
 
   const hasEmotionCoreImportDeclaration = hasImportDeclaration({
     j,
@@ -222,6 +228,7 @@ const transformer = (fileInfo: FileInfo, { jscodeshift: j }: API, options: Optio
   if (hasEmotionStyledImportDeclaration) {
     convertDefaultImportToNamedImport({
       j,
+      plugins,
       collection,
       importPath: imports.emotionStyledPackageName,
       namedImport: imports.compiledStyledImportName,
@@ -246,4 +253,4 @@ const transformer = (fileInfo: FileInfo, { jscodeshift: j }: API, options: Optio
   return collection.toSource(options.printOptions || { quote: 'single' });
 };
 
-export default transformer;
+export default withPlugin(transformer);

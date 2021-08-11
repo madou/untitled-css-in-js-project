@@ -25,7 +25,7 @@
     "src"
   ],
   "peerDependencies": {
-    "@compiled/react": ">=0.6.10"
+    "@compiled/codemods": ">=0.6.10"
   },
   "dependencies": {
     "app-root-path": "^3.0.0",

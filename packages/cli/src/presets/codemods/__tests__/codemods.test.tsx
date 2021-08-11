@@ -20,7 +20,7 @@ const expectCodemodToHaveBeenRan = (name: string, runPath: string) => {
   expect(execAsync).toHaveBeenCalledWith(
     expect.stringMatching(
       new RegExp(
-        `.*--transform=.*node_modules\\/@compiled\\/react\\/dist\\/cjs\\/codemods\\/${name}\\/index.js ${regexPath}`
+        `.*--transform=.*node_modules\\/@compiled\\/codemods\\/dist\\/transforms\\/${name}\\/index.js ${regexPath}`
       )
     )
   );
@@ -111,6 +111,12 @@ describe('main', () => {
           {
             name: 'ignorePattern',
             message: '--ignore-pattern',
+          },
+          {
+            name: 'plugins',
+            message: 'number of plugins',
+            hint: `default: ${chalk.cyan('0')}`,
+            validate: expect.any(Function),
           },
         ],
       })

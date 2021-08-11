@@ -1,0 +1,24 @@
+{
+  "name": "@compiled/codemods",
+  "version": "0.6.14",
+  "description": "Codemods (with JSCodeshift) for Compiled CSS-in-JS.",
+  "author": "Michael Dougall",
+  "license": "Apache-2.0",
+  "homepage": "https://compiledcssinjs.com",
+  "bugs": "https://github.com/atlassian-labs/compiled/issues/new?assignees=&labels=bug&template=bug_report.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atlassian-labs/compiled.git",
+    "directory": "packages/codemods"
+  },
+  "main": "./dist/cjs/index.js",
+  "sideEffects": false,
+  "keywords": [
+    "codemod",
+    "compiled",
+    "css-in-js",
+    "typescript"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}
