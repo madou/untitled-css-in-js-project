@@ -1,7 +1,7 @@
 import { sort } from '@compiled/css';
 import { toBoolean, createError } from '@compiled/utils';
 import type { Compiler, Compilation } from 'webpack';
-import type { CompiledExtractPluginOptions } from './types';
+import type { CompiledExtractPluginOptions, LoaderOpts } from './types';
 import {
   getAssetSourceContents,
   getNormalModuleHook,
@@ -13,54 +13,16 @@ export const pluginName = 'CompiledExtractPlugin';
 export const styleSheetName = 'compiled-css';
 
 /**
- * Returns CSS Assets that we're interested in.
+ * Returns CSS Assets from the current compilation.
  *
- * @param options
  * @param assets
- * @returns
  */
 const getCSSAssets = (assets: Compilation['assets']) => {
   return Object.keys(assets)
     .filter((assetName) => {
-      return assetName.endsWith(`${styleSheetName}.css`);
+      return assetName.endsWith('.css');
     })
     .map((assetName) => ({ name: assetName, source: assets[assetName], info: {} }));
-};
-
-/**
- * Set a cache group to force all CompiledCSS found to be in a single style sheet.
- * We do this to simplify the sorting story for now. Later on we can investigate
- * hoisting only unstable styles into the parent style sheet from async chunks.
- *
- * @param compiler
- */
-const forceCSSIntoOneStyleSheet = (compiler: Compiler) => {
-  const cacheGroup = {
-    compiledCSS: {
-      name: styleSheetName,
-      type: 'css/mini-extract',
-      chunks: 'all',
-      // We merge only CSS from Compiled.
-      test: /css-loader\/extract\.css$/,
-      enforce: true,
-    },
-  };
-
-  if (!compiler.options.optimization) {
-    compiler.options.optimization = {};
-  }
-
-  if (!compiler.options.optimization.splitChunks) {
-    compiler.options.optimization.splitChunks = {
-      cacheGroups: {},
-    };
-  }
-
-  if (!compiler.options.optimization.splitChunks.cacheGroups) {
-    compiler.options.optimization.splitChunks.cacheGroups = {};
-  }
-
-  Object.assign(compiler.options.optimization.splitChunks.cacheGroups, cacheGroup);
 };
 
 /**
@@ -108,26 +70,36 @@ export class CompiledExtractPlugin {
     const { RawSource } = getSources(compiler);
 
     pushNodeModulesExtractLoader(compiler, this.#options);
-    forceCSSIntoOneStyleSheet(compiler);
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
-      getNormalModuleHook(compiler, compilation).tap(pluginName, (loaderContext) => {
+      getNormalModuleHook(compiler, compilation).tap(pluginName, (loaderContext: LoaderOpts) => {
         // We add some information here to tell loaders that the plugin has been configured.
         // Bundling will throw if this is missing (i.e. consumers did not setup correctly).
-        (loaderContext as any)[pluginName] = true;
+        loaderContext[pluginName] = true;
       });
 
       getOptimizeAssetsHook(compiler, compilation).tap(pluginName, (assets) => {
-        const cssAssets = getCSSAssets(assets);
-        if (cssAssets.length === 0) {
+        const CSSAssets = getCSSAssets(assets);
+        if (CSSAssets.length === 0) {
           return;
         }
 
-        const [asset] = cssAssets;
-        const contents = getAssetSourceContents(asset.source);
-        const newSource = new RawSource(sort(contents));
+        const hoistedStyles: string[] = [];
+        const [entry, ...chunks] = CSSAssets;
 
-        compilation.updateAsset(asset.name, newSource, asset.info);
+        chunks.forEach((asset) => {
+          const contents = getAssetSourceContents(asset.source);
+          const { css, unstableRules } = sort(contents, { removeUnstableRules: true });
+          const newSource = new RawSource(css);
+
+          hoistedStyles.push(...unstableRules);
+          compilation.updateAsset(asset.name, newSource, asset.info);
+        });
+
+        const contents = getAssetSourceContents(entry.source);
+        const { css } = sort(contents + hoistedStyles.join(''));
+        const newSource = new RawSource(css);
+        compilation.updateAsset(entry.name, newSource, entry.info);
       });
     });
   }

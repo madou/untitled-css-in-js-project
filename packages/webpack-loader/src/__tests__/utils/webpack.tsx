@@ -37,7 +37,7 @@ export function bundle(
               },
             },
             {
-              loader: '@compiled/webpack-loader',
+              loader: require.resolve('../../compiled-loader'),
               options: {
                 importReact: false,
                 extract,

@@ -1,8 +1,8 @@
 import '@compiled/react';
 import { blueviolet } from './imports/colors';
 
-const Component = () => <div css={{ color: blueviolet }} />;
+import('./multiple');
 
-import('./imports/css-prop');
+const Component = () => <div css={{ color: blueviolet }} />;
 
 export default Component;

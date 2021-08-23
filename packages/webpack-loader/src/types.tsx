@@ -27,7 +27,14 @@ export interface CompiledLoaderOptions {
   nonce?: string;
 }
 
-export interface LoaderThis<TOptions = unknown> {
+export interface LoaderOpts {
+  /**
+   * When set confirms that the extract plugin has been configured.
+   */
+  [pluginName]?: true;
+}
+
+export interface LoaderThis<TOptions = unknown> extends LoaderOpts {
   /**
    * Query param passed to the loader.
    *
@@ -81,11 +88,6 @@ export interface LoaderThis<TOptions = unknown> {
    * @param error
    */
   emitError(error: Error): void;
-
-  /**
-   * When set confirms that the extract plugin has been configured.
-   */
-  [pluginName]?: true;
 }
 
 export interface CompiledExtractPluginOptions {

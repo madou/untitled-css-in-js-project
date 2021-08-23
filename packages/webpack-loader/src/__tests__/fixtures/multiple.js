@@ -4,6 +4,10 @@ import { blueviolet, blue, orange, purple, red, yellow } from './imports/colors'
 import { Orange } from './imports/css-prop';
 
 export const Blue = styled.span`
+  @media screen {
+    color: red;
+  }
+
   color: ${blueviolet};
 
   :focus {
@@ -18,11 +22,11 @@ export const Blue = styled.span`
 export const Red = styled.span`
   color: ${red};
 
-  :focus {
-    color: ${orange};
-  }
-
   :hover {
     color: ${yellow};
+  }
+
+  :focus {
+    color: ${orange};
   }
 `;
