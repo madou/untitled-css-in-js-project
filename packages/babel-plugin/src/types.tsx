@@ -49,9 +49,10 @@ export interface State extends PluginPass {
    * Means the `styled` api was found as `styledFunction` - as well as CSS prop is enabled in this module.
    */
   compiledImports?: {
-    styled?: string;
     ClassNames?: string;
     css?: string;
+    keyframes?: string;
+    styled?: string;
   };
 
   /**
@@ -85,7 +86,7 @@ export interface State extends PluginPass {
   includedFiles: string[];
 }
 
-export interface Metadata {
+interface CommonMetadata {
   /**
    * State of the current plugin run.
    */
@@ -103,6 +104,17 @@ export interface Metadata {
    */
   ownPath?: NodePath<any>;
 }
+
+interface KeyframesMetadata extends CommonMetadata {
+  context: 'keyframes';
+  keyframe: string;
+}
+
+interface RootMetadata extends CommonMetadata {
+  context: 'root';
+}
+
+export type Metadata = RootMetadata | KeyframesMetadata;
 
 export interface Tag {
   /**

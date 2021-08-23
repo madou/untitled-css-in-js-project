@@ -167,7 +167,7 @@ export default declare<State>((api) => {
             return;
           }
 
-          (['styled', 'ClassNames', 'css'] as const).forEach((apiName) => {
+          (['styled', 'ClassNames', 'css', 'keyframes'] as const).forEach((apiName) => {
             if (
               state.compiledImports &&
               t.isIdentifier(specifier.node?.imported) &&
@@ -188,32 +188,48 @@ export default declare<State>((api) => {
           return;
         }
 
+        if (
+          t.isIdentifier(path.node.tag) &&
+          path.node.tag.name === state.compiledImports?.keyframes
+        ) {
+          state.pathsToCleanup.push({ path, action: 'replace' });
+          return;
+        }
+
         if (!state.compiledImports?.styled) {
           return;
         }
 
-        visitStyledPath(path, { state, parentPath: path });
+        visitStyledPath(path, { context: 'root', state, parentPath: path });
       },
       CallExpression(path, state) {
         if (!state.compiledImports) {
           return;
         }
 
-        visitStyledPath(path, { state, parentPath: path });
+        if (
+          t.isIdentifier(path.node.callee) &&
+          path.node.callee.name === state.compiledImports?.keyframes
+        ) {
+          state.pathsToCleanup.push({ path, action: 'replace' });
+          return;
+        }
+
+        visitStyledPath(path, { context: 'root', state, parentPath: path });
       },
       JSXElement(path, state) {
         if (!state.compiledImports?.ClassNames) {
           return;
         }
 
-        visitClassNamesPath(path, { state, parentPath: path });
+        visitClassNamesPath(path, { context: 'root', state, parentPath: path });
       },
       JSXOpeningElement(path, state) {
         if (!state.compiledImports) {
           return;
         }
 
-        visitCssPropPath(path, { state, parentPath: path });
+        visitCssPropPath(path, { context: 'root', state, parentPath: path });
       },
     },
   };

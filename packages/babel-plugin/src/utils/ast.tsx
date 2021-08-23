@@ -41,9 +41,9 @@ export const getPathOfNode = <TNode extends unknown>(
 /**
  * Returns `true` if the expression is using `css` from `@compiled/react`.
  *
- * @param node
- * @param meta
- * @returns
+ * @param node {t.Expression} The expression that is being checked
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
+ * @returns {boolean} Whether the node is a css usage from compiled
  */
 export const isCompiledCSSTemplateLiteral = (
   node: t.Expression,
@@ -53,6 +53,42 @@ export const isCompiledCSSTemplateLiteral = (
     t.isTaggedTemplateExpression(node) &&
     t.isIdentifier(node.tag) &&
     node.tag.name === meta.state.compiledImports?.css
+  );
+};
+
+/**
+ * Returns `true` if the expression is using `keyframes` from `@compiled/react` as a tagged template expression.
+ *
+ * @param node {t.Node} The expression that is being checked
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
+ * @returns {boolean} Whether the node is a compiled keyframe
+ */
+export const isCompiledKeyframesTaggedTemplateExpression = (
+  node: t.Node,
+  meta: Metadata
+): node is t.TaggedTemplateExpression => {
+  return (
+    t.isTaggedTemplateExpression(node) &&
+    t.isIdentifier(node.tag) &&
+    node.tag.name === meta.state.compiledImports?.keyframes
+  );
+};
+
+/**
+ * Returns `true` if the expression is using `keyframes` from `@compiled/react` as a call expression.
+ *
+ * @param node {t.Node} The expression that is being checked
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
+ * @returns {boolean} Whether the node is a compiled keyframe
+ */
+export const isCompiledKeyframesCallExpression = (
+  node: t.Node,
+  meta: Metadata
+): node is t.CallExpression => {
+  return (
+    t.isCallExpression(node) &&
+    t.isIdentifier(node.callee) &&
+    node.callee.name === meta.state.compiledImports?.keyframes
   );
 };
 
@@ -254,7 +290,7 @@ export const isPathReferencingAnyMutatedIdentifiers = (path: NodePath<any>): boo
  * else it will return the fallback node.
  *
  * @param node Node to evaluate
- * @param meta
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  * @param fallbackNode Optional node to return if evaluation is not successful. Defaults to `node`.
  */
 export const babelEvaluateExpression = (
@@ -397,8 +433,8 @@ export const resolveIdentifierComingFromDestructuring = ({
  * it will search recursively and resolve to `NumericalLiteral` node `10`.
  *
  * @param expression Node inside which we have to resolve the value
- * @param meta Plugin metadata
- * @param referenceName Reference name for which `binding` to be resolved
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
+ * @param referenceName {string} Reference name for which `binding` to be resolved
  */
 const resolveObjectPatternValueNode = (
   expression: t.Expression,
@@ -485,11 +521,11 @@ const getDestructuredObjectPatternKey = (node: t.ObjectPattern, referenceName: s
  * Will return the `node` of the a binding.
  * This function will follow import specifiers to return the actual `node`.
  *
- * When wanting to do futher traversal on the resulting `node` make sure to use the output `meta` as well.
+ * When wanting to do further traversal on the resulting `node` make sure to use the output `meta` as well.
  * The `meta` will be for the resulting file it was found in.
  *
- * @param referenceName Reference name for which `binding` to be resolved
- * @param meta Plugin metadata
+ * @param referenceName {string} Reference name for which `binding` to be resolved
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
  */
 export const resolveBindingNode = (
   referenceName: string,
@@ -564,7 +600,8 @@ export const resolveBindingNode = (
         value: () => findDefaultExportModuleNode(ast),
       }));
     } else if (binding.path.isImportSpecifier()) {
-      const exportName = binding.path.node.local.name;
+      const { imported } = binding.path.node;
+      const exportName = t.isIdentifier(imported) ? imported.name : imported.value;
 
       ({ foundNode, foundParentPath } = meta.state.cache.load({
         namespace: 'find-named-export-module-node',

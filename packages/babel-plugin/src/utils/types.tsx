@@ -14,10 +14,15 @@ export interface LogicalCssItem {
   css: string;
 }
 
-export type CssItem = UnconditionalCssItem | LogicalCssItem;
+export interface SheetCssItem {
+  type: 'sheet';
+  css: string;
+}
+
+export type CssItem = UnconditionalCssItem | LogicalCssItem | SheetCssItem;
 
 export interface CSSOutput {
-  css: Array<CssItem>;
+  css: CssItem[];
   variables: {
     name: string;
     expression: t.Expression;
