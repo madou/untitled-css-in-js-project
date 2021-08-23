@@ -1,5 +1,11 @@
 # @compiled/babel-plugin
 
+## 0.6.15
+
+### Patch Changes
+
+- 48805ec: Use the correct expression in the style prop, when an identifier is shadowed by a function argument
+
 ## 0.6.14
 
 ### Patch Changes
