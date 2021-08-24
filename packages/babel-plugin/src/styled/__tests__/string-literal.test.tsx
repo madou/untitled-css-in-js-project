@@ -57,6 +57,37 @@ describe('styled component string literal', () => {
     ]);
   });
 
+  it('should be able to override properties in a mixin', () => {
+    const actual = transform(`
+      import { styled, css } from '@compiled/react';
+
+      const primary = css\`
+        font-size: 32px;
+        font-weight: bold;
+        color: purple;
+      \`;
+    
+      const secondary = css\`
+        border: 1px solid red;
+      \`;
+
+      const Component = styled.button\`
+        \${primary};
+        font-size: 30px;
+        \${secondary};
+        color: blue;
+        border: 2px solid black;
+      \`;
+    `);
+
+    expect(actual).toIncludeMultiple([
+      '{border:2px solid black}',
+      '{color:blue}',
+      '{font-size:30px}',
+      '{font-weight:bold}',
+    ]);
+  });
+
   it('should inline constant numeric literal', () => {
     const actual = transform(`
         import { styled } from '@compiled/react';
@@ -248,11 +279,19 @@ describe('styled component string literal', () => {
         const mixin = () => ({ color: 'red' });
 
         const ListItem = styled.div\`
+          font-size: 20px;
+          border: 1px solid black;
           \${mixin()};
+          background: white;
         \`;
       `);
 
-    expect(actual).toInclude('{color:red}');
+    expect(actual).toIncludeMultiple([
+      '{font-size:20px}',
+      '{border:1px solid black}',
+      '{color:red}',
+      '{background-color:white}',
+    ]);
   });
 
   it('should transform template string with no argument arrow function variable when not called', () => {
@@ -262,11 +301,17 @@ describe('styled component string literal', () => {
         const mixin = () => ({ color: 'red' });
 
         const ListItem = styled.div\`
+          border:1px solid black;
           \${mixin};
+          background-color: white;
         \`;
       `);
 
-    expect(actual).toInclude('{color:red}');
+    expect(actual).toIncludeMultiple([
+      '{border:1px solid black}',
+      '{color:red}',
+      'background-color:white',
+    ]);
   });
 
   it('should transform template string with no argument functions', () => {
@@ -404,11 +449,17 @@ describe('styled component string literal', () => {
         }
 
         const ListItem = styled.div\`
+          border:1px solid black;
           \${mixin()};
+          background: white;
         \`;
       `);
 
-    expect(actual).toInclude('{color:red}');
+    expect(actual).toIncludeMultiple([
+      '{border:1px solid black}',
+      '{color:red}',
+      '{background-color:white}',
+    ]);
   });
 
   it('should transform template string with argument arrow function variable', () => {
@@ -427,15 +478,19 @@ describe('styled component string literal', () => {
         const greenColor = 'green';
 
         const ListItem = styled.div\`
+          font-size: 20px;
           \${mixin({ color1: color.red, color2: 'blue' }, greenColor, 10)};
+          font-weight: bold;
         \`;
     `);
 
     expect(actual).toIncludeMultiple([
+      '{font-size:20px}',
       '{color:red}',
       '{background-color:blue}',
       '{border-color:green}',
       '{border-radius:10px}',
+      '{font-weight:bold}',
     ]);
   });
 
@@ -452,11 +507,14 @@ describe('styled component string literal', () => {
         });
 
         const ListItem = styled.div\`
+          background: white;
           \${mixin(props.color1, radius)};
+          border: 1px solid black;
         \`;
       `);
 
     expect(actual).toIncludeMultiple([
+      '{background-color:white}',
       '{color:var(--_zo7lop)}',
       '"--_zo7lop":ix(props.color1)',
       '{border-radius:10px}',
@@ -464,6 +522,7 @@ describe('styled component string literal', () => {
       '"--_u6vle4":ix()',
       '{font-size:var(--_kre2x8)}',
       '"--_kre2x8":ix()',
+      '{border:1px solid black}',
     ]);
   });
 
@@ -482,14 +541,18 @@ describe('styled component string literal', () => {
         const radius = 10;
 
         const ListItem = styled.div\`
+          font-size: 20px;
           \${mixin.value(props.color1, radius, 'red')};
+          font-weight: bold;
         \`;
       `);
 
     expect(actual).toIncludeMultiple([
+      '{font-size:20px}',
       '"--_zo7lop":ix(props.color1)',
       '{border-radius:10px}',
       '{border-color:red}',
+      '{font-weight:bold}',
     ]);
   });
 

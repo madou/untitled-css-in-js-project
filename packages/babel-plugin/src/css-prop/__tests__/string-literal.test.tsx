@@ -207,17 +207,61 @@ describe('css prop string literal', () => {
     expect(actual).toInclude('{font-size:30px}');
   });
 
+  it('should be able to override properties in a mixin', () => {
+    const actual = transform(`
+      import '@compiled/react';
+      import React from 'react';
+
+      const primary = () => ({
+        fontSize: '32px',
+        fontWeight: 'bold',
+        color: 'purple',
+      });
+
+      const secondary = {
+        border: '1px solid red'
+      };
+
+      const Component = () => {
+        return <div css={\`
+          \${primary};
+          font-size: 30px;
+          \${secondary};
+          color: blue;
+          border: 2px solid black;
+        \`} />
+      };
+    `);
+
+    expect(actual).toIncludeMultiple([
+      '{border:2px solid black}',
+      '{color:blue}',
+      '{font-size:30px}',
+      '{font-weight:bold}',
+    ]);
+  });
+
   it('should transform template string with no argument arrow function variable', () => {
     const actual = transform(`
         import '@compiled/react';
         import React from 'react';
 
         const mixin = () => ({ color: 'blue', fontSize: '30px' });
-        <div css={\`\${mixin}\`}>hello world</div>
+        <div css={\`
+          background: white;
+          border: 1px solid black;
+          \${mixin};
+          font-weight: bold;
+        \`}>hello world</div>
       `);
 
-    expect(actual).toInclude('{color:blue}');
-    expect(actual).toInclude('{font-size:30px}');
+    expect(actual).toIncludeMultiple([
+      '{background-color:white}',
+      '{border:1px solid black}',
+      '{color:blue}',
+      '{font-size:30px}',
+      '{font-weight:bold}',
+    ]);
   });
 
   it('should transform template string with no argument arrow function call variable', () => {
@@ -226,11 +270,19 @@ describe('css prop string literal', () => {
         import React from 'react';
 
         const mixin = () => ({ color: 'blue', fontSize: '30px' });
-        <div css={\`\${mixin()}\`}>hello world</div>
+        <div css={\`
+          border: 1px solid black;
+          \${mixin()};
+          background: white;
+        \`}>hello world</div>
       `);
 
-    expect(actual).toInclude('{color:blue}');
-    expect(actual).toInclude('{font-size:30px}');
+    expect(actual).toIncludeMultiple([
+      '{border:1px solid black}',
+      '{font-size:30px}',
+      '{color:blue}',
+      '{background-color:white}',
+    ]);
   });
 
   it('should transform template string with no argument functions', () => {
@@ -304,10 +356,18 @@ describe('css prop string literal', () => {
           return { color: 'red' };
         }
 
-        <div css={\`\${mixin()}\`}>hello world</div>
+        <div css={\`
+          border: 1px solid black;
+          \${mixin()};
+          padding-top: 10px;
+        \`}>hello world</div>
       `);
 
-    expect(actual).toInclude('{color:red}');
+    expect(actual).toIncludeMultiple([
+      '{border:1px solid black}',
+      '{color:red}',
+      '{padding-top:10px}',
+    ]);
   });
 
   it('should transform template string with argument arrow function variable', () => {
@@ -329,15 +389,21 @@ describe('css prop string literal', () => {
         const Component = (props) => {
           const color2 = 'black';
 
-          return <div css={\`\${mixin({ color1: color.red, color2: 'blue' }, greenColor, 10)}\`} />
+          return <div css={\`
+            padding-top: 10px;
+            \${mixin({ color1: color.red, color2: 'blue' }, greenColor, 10)};
+            font-weight: bold;
+          \`} />
         };
     `);
 
     expect(actual).toIncludeMultiple([
+      '{padding-top:10px}',
       '{color:red}',
       '{background-color:blue}',
       '{border-color:green}',
       '{border-radius:10px}',
+      '{font-weight:bold}',
     ]);
   });
 
@@ -354,10 +420,15 @@ describe('css prop string literal', () => {
           fontWeight: weight
         });
 
-        const Component = (props) => <div css={\`\${mixin(props.color1, radius)}\`} />
+        const Component = (props) => <div css={\`
+          border:1px solid black;
+          \${mixin(props.color1, radius)};
+          display:block;
+        \`} />
       `);
 
     expect(actual).toIncludeMultiple([
+      '{border:1px solid black}',
       '{color:var(--_zo7lop)}',
       '"--_zo7lop":ix(props.color1)',
       '{border-radius:10px}',
@@ -365,6 +436,7 @@ describe('css prop string literal', () => {
       '"--_u6vle4":ix()',
       '{font-size:var(--_kre2x8)}',
       '"--_kre2x8":ix()',
+      '{display:block}',
     ]);
   });
 
@@ -383,13 +455,19 @@ describe('css prop string literal', () => {
 
         const radius = 10;
 
-        const Component = (props) => <div css={\`\${mixin.value(props.color1, radius, 'red')}\`} />
+        const Component = (props) => <div css={\`
+          margin-top: 20px;
+          \${mixin.value(props.color1, radius, 'red')};
+          background: white;
+        \`} />
       `);
 
     expect(actual).toIncludeMultiple([
+      '{margin-top:20px}',
       '"--_zo7lop":ix(props.color1)',
       '{border-radius:10px}',
       '{border-color:red}',
+      '{background-color:white}',
     ]);
   });
 

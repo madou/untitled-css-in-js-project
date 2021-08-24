@@ -286,6 +286,11 @@ const extractTemplateLiteral = (node: t.TemplateLiteral, meta: Metadata): CSSOut
       const result = buildCss(interpolation, updatedMeta);
       variables.push(...result.variables);
       css.push(...result.css);
+
+      if (q.hasOwnProperty('value')) {
+        return acc + q.value.raw;
+      }
+
       return acc;
     }
 
