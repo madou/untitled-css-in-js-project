@@ -1,3 +1,4 @@
+import generate from '@babel/generator';
 import template from '@babel/template';
 import * as t from '@babel/types';
 import traverse, { NodePath, Visitor } from '@babel/traverse';
@@ -8,14 +9,14 @@ import { Tag } from '../types';
 import { getItemCss } from './css-builders';
 import { pickFunctionBody, resolveIdentifierComingFromDestructuring } from './ast';
 import { Metadata } from '../types';
-import { CSSOutput } from '../utils/types';
+import { CSSOutput, CssItem } from '../utils/types';
 import { PROPS_IDENTIFIER_NAME } from '../constants';
 
 export interface StyledTemplateOpts {
   /**
    * Class to be used for the CSS selector.
    */
-  classNames: string[];
+  classNames: t.Expression[];
 
   /**
    * Tag for the Styled Component, for example "div" or user defined component.
@@ -325,6 +326,19 @@ const styledTemplate = (opts: StyledTemplateOpts, meta: Metadata): t.Node => {
       })
     : t.identifier('style');
 
+  let unconditionalClassNames = '',
+    logicalClassNames = '';
+
+  opts.classNames.forEach((item) => {
+    if (t.isStringLiteral(item)) {
+      unconditionalClassNames += `${item.value} `;
+    } else if (t.isLogicalExpression(item)) {
+      logicalClassNames += `${generate(item).code}, `;
+    }
+  });
+
+  const classNames = `"${unconditionalClassNames.trim()}", ${logicalClassNames}`;
+
   return template(
     `
   forwardRef(({
@@ -341,7 +355,7 @@ const styledTemplate = (opts: StyledTemplateOpts, meta: Metadata): t.Node => {
         {...${PROPS_IDENTIFIER_NAME}}
         style={%%styleProp%%}
         ref={ref}
-        className={ax(["${opts.classNames.join(' ')}", ${PROPS_IDENTIFIER_NAME}.className])}
+        className={ax([${classNames} ${PROPS_IDENTIFIER_NAME}.className])}
       />
     </CC>
   ));
@@ -425,7 +439,29 @@ export const conditionallyJoinExpressions = (
  * @param meta Plugin metadata
  */
 export const buildStyledComponent = (tag: Tag, cssOutput: CSSOutput, meta: Metadata): t.Node => {
-  const { sheets, classNames } = transformCss(cssOutput.css.map((x) => getItemCss(x)).join(''));
+  const unconditionalCss: string[] = [];
+  const logicalCss: CssItem[] = [];
+
+  cssOutput.css.forEach((item) => {
+    if (item.type === 'unconditional') {
+      unconditionalCss.push(getItemCss(item));
+    } else if (item.type === 'logical') {
+      logicalCss.push(item);
+    }
+  });
+
+  // Rely on transformCss to remove duplicates and return only the last unconditional CSS for each property
+  const uniqueUnconditionalCssOutput = transformCss(unconditionalCss.join(''));
+
+  // Rely on transformItemCss to build logicalExpressions for logical CSS
+  const logicalCssOutput = transformItemCss({ css: logicalCss, variables: cssOutput.variables });
+
+  const sheets = [...uniqueUnconditionalCssOutput.sheets, ...logicalCssOutput.sheets];
+
+  const classNames = [
+    ...[t.stringLiteral(uniqueUnconditionalCssOutput.classNames.join(' '))],
+    ...logicalCssOutput.classNames,
+  ];
 
   return styledTemplate(
     {
