@@ -21,14 +21,14 @@
   ],
   "dependencies": {
     "@compiled/utils": "^0.6.11",
-    "autoprefixer": "^9.8.6",
+    "autoprefixer": "^10.3.3",
     "convert-source-map": "^1.7.0",
-    "cssnano-preset-default": "^4.0.8",
-    "postcss": "^7.0.36",
-    "postcss-nested": "^4.2.3",
-    "postcss-normalize-whitespace": "^4.0.2",
+    "cssnano-preset-default": "^5.1.4",
+    "postcss": "^8.3.6",
+    "postcss-nested": "^5.0.6",
+    "postcss-normalize-whitespace": "^5.0.1",
     "postcss-selector-parser": "^6.0.6",
-    "postcss-values-parser": "^4.0.0"
+    "postcss-values-parser": "^6.0.0"
   },
   "devDependencies": {
     "@types/autoprefixer": "^9.7.2",
