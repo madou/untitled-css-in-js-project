@@ -18,6 +18,9 @@ jobs:
         run: echo ::set-output name=NVMRC::$(cat .nvmrc)
         id: nvm
 
+      - name: enable corepack
+        run: corepack enable
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -35,7 +38,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install packages
-        run: yarn
+        run: yarn install --immutable
 
       - name: Build source
         run: yarn build

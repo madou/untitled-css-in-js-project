@@ -1,4 +1,4 @@
-name: Test
+name: Website
 
 on:
   push:
@@ -26,50 +26,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - name: Install packages
+        working-directory: './website'
         run: yarn install --immutable
 
       - name: Validate
-        run: yarn lint
-
-      - name: Check prettier
-        run: yarn prettier:check
-
-      - name: Bundle size
-        run: |
-          GITHUB_RUN_NUMBER_TMP=GITHUB_RUN_NUMBER && export GITHUB_RUN_NUMBER=1;
-          echo "$GITHUB_RUN_NUMBER"
-          yarn bundlesize
-          export GITHUB_RUN_NUMBER=GITHUB_RUN_NUMBER_TMP
-          echo "$GITHUB_RUN_NUMBER"
-
-      - name: Build source for remainder tests
+        working-directory: './website'
         run: yarn build
-
-        # Needs to run after `yarn build` so that `packages/webpack-loader/`
-        # tests can resolve `@compiled/react/runtime` correctly.
-      - name: Run tests
-        run: yarn test:cover --ci
-
-      - name: Run import test
-        run: yarn test:imports
-
-      - name: Run parcel tests
-        run: yarn test:parcel
 
       # Borrowed from https://github.com/yarnpkg/berry/issues/4976#issue-1415019789
       - name: Run yarn lint:yarn-dedupe
+        working-directory: './website'
         run: |
           if ! yarn lint:yarn-dedupe; then
             echo ''

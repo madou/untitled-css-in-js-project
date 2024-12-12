@@ -29,9 +29,10 @@
     "clean:node-modules": "rm -rf node_modules/.cache",
     "clean:parcel-cache": "rm -rf .parcel-cache/",
     "clean:ts-cache": "find . -name \"*.tsbuildinfo\" -type f -delete",
-    "postinstall": "scripts/postinstall.sh",
+    "fix:yarn-dedupe": "yarn dedupe",
     "lint": "eslint --config .eslintrc.js --ext js,json,jsx,ts,tsx .",
-    "lint:fix": "yarn lint -- --fix",
+    "lint:fix": "yarn lint --fix",
+    "lint:yarn-dedupe": "yarn dedupe --check",
     "prettier:check": "prettier ./ --check",
     "prettier:fix": "prettier ./ --write",
     "release": "yarn clean && yarn build && yarn changeset publish",
@@ -63,7 +64,6 @@
     "semver": "^7.5.4",
     "typescript": "^4.9.5"
   },
-  "dependencies": {},
   "devDependencies": {
     "@babel/preset-env": "^7.21.5",
     "@babel/preset-react": "^7.18.6",
@@ -126,6 +126,7 @@
       }
     }
   },
+  "packageManager": "yarn@3.8.7",
   "size-limit": [
     {
       "path": "./packages/react/dist/browser/runtime/css-custom-property.js",

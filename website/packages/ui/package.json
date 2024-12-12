@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "./src/index.ts",
   "source": "./src/index.ts",
-  "scripts": {},
   "dependencies": {
     "@babel/core": "^7.24.5",
     "@babel/preset-react": "^7.24.1",

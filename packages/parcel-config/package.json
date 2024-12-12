@@ -21,7 +21,6 @@
     "@compiled/parcel-transformer-external": "^0.1.0",
     "@parcel/plugin": "^2.8.3"
   },
-  "devDependencies": {},
   "engines": {
     "parcel": "^2.0.0"
   }

@@ -17,7 +17,8 @@
     "clean": "rm -rf dist && workspaces-run -- rm -rf dist && workspaces-run -- rm -rf .cache",
     "clean:npm": "yarn clean:pkg:npm && rm -rf node_modules",
     "clean:pkg:npm": "workspaces-run -- rm -rf node_modules",
-    "postinstall": "npx yarn-deduplicate",
+    "fix:yarn-dedupe": "yarn dedupe",
+    "lint:yarn-dedupe": "yarn dedupe --check",
     "start:docs": "cd packages/docs && yarn start",
     "start:landing": "cd packages/landing && yarn start"
   },

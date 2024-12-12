@@ -22,13 +22,16 @@ jobs:
         run: echo ::set-output name=NVMRC::$(cat .nvmrc)
         id: nvm
 
+      - name: enable corepack
+        run: corepack enable
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ steps.nvm.outputs.NVMRC }}
 
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --immutable
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
