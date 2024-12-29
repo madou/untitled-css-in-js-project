@@ -16,15 +16,16 @@ import type { CssItem } from './types';
  */
 const transformCssItem = (
   item: CssItem,
-  meta: Metadata
+  meta: Metadata,
+  isGlobal = false
 ): {
   sheets: string[];
   classExpression?: t.Expression;
 } => {
   switch (item.type) {
     case 'conditional':
-      const consequent = transformCssItem(item.consequent, meta);
-      const alternate = transformCssItem(item.alternate, meta);
+      const consequent = transformCssItem(item.consequent, meta, isGlobal);
+      const alternate = transformCssItem(item.alternate, meta, isGlobal);
       const defaultExpression = t.identifier('undefined');
       const hasConsequentSheets = Boolean(consequent.sheets.length);
       const hasAlternateSheets = Boolean(alternate.sheets.length);
@@ -58,7 +59,7 @@ const transformCssItem = (
       };
 
     case 'logical':
-      const logicalCss = transformCss(getItemCss(item), meta.state.opts);
+      const logicalCss = transformCss(getItemCss(item), meta.state.opts, isGlobal);
 
       return {
         sheets: logicalCss.sheets,
@@ -81,7 +82,7 @@ const transformCssItem = (
       };
 
     default:
-      const css = transformCss(getItemCss(item), meta.state.opts);
+      const css = transformCss(getItemCss(item), meta.state.opts, isGlobal);
       const className = compressClassNamesForRuntime(
         css.classNames,
         meta.state.opts.classNameCompressionMap
@@ -102,13 +103,14 @@ const transformCssItem = (
  */
 export const transformCssItems = (
   cssItems: CssItem[],
-  meta: Metadata
+  meta: Metadata,
+  isGlobal = false
 ): { sheets: string[]; classNames: t.Expression[] } => {
   const sheets: string[] = [];
   const classNames: t.Expression[] = [];
 
   cssItems.forEach((item) => {
-    const result = transformCssItem(item, meta);
+    const result = transformCssItem(item, meta, isGlobal);
 
     sheets.push(...result.sheets);
     if (result.classExpression) {

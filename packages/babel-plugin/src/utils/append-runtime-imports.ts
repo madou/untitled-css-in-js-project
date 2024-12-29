@@ -15,9 +15,15 @@ const importSpecifier = (name: string, localName?: string): t.ImportSpecifier =>
   return t.importSpecifier(t.identifier(name), t.identifier(localName || name));
 };
 
+const COMPILED_GUARANTEED_RUNTIME_IMPORTS = ['ix', 'CC', 'CS'];
+
 // Runtime function `ac` is less performant than `ax`, so we only want to import `ac` if classNameCompressionMap is provided.
-const COMPILED_RUNTIME_IMPORTS_WITH_COMPRESSION = ['ac', 'ix', 'CC', 'CS'];
-const COMPILED_RUNTIME_IMPORTS_WITHOUT_COMPRESSION = ['ax', 'ix', 'CC', 'CS'];
+const AX = 'ax';
+const AC = 'ac';
+
+const INJECT_COMPILED_CSS_CALL = 'injectCompiledCss';
+const INJECT_GLOBAL_CSS_CALL = 'injectGlobalCss';
+
 const COMPILED_RUNTIME_MODULE = '@compiled/react/runtime';
 
 /**
@@ -28,9 +34,12 @@ const COMPILED_RUNTIME_MODULE = '@compiled/react/runtime';
  * @param path ImportDeclaration node path
  */
 export const appendRuntimeImports = (path: NodePath<t.Program>, state: State): void => {
-  const COMPILED_RUNTIME_IMPORTS = state.opts.classNameCompressionMap
-    ? COMPILED_RUNTIME_IMPORTS_WITH_COMPRESSION
-    : COMPILED_RUNTIME_IMPORTS_WITHOUT_COMPRESSION;
+  const COMPILED_RUNTIME_IMPORTS = [
+    state.opts.classNameCompressionMap ? AC : AX,
+    ...COMPILED_GUARANTEED_RUNTIME_IMPORTS,
+    ...(state.compiledImports?.vanillaCss ? [INJECT_COMPILED_CSS_CALL] : []),
+    ...(state.compiledImports?.globalCss ? [INJECT_GLOBAL_CSS_CALL] : []),
+  ];
 
   // Check if we have any sibling runtime import
   const previouslyDeclaredRuntimeDeclaration = path

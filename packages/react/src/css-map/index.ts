@@ -120,7 +120,8 @@ export default function cssMap<
     CSSProperties & WhitelistedSelector & ExtendedSelectors & LooseMediaQueries
   >
 >(
-  _styles: TStyles
+  _styles: TStyles,
+  _options?: { global: boolean }
 ): {
   readonly [P in keyof TStyles]: CompiledStyles<RemapMedia<TStyles[P]>>;
 } {

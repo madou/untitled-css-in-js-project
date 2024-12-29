@@ -65,6 +65,21 @@ export const isCompiledCSSMapCallExpression = (
   !!state.compiledImports?.cssMap?.includes(node.callee.name);
 
 /**
+ * TODO
+ *
+ * @param node {t.Node} The node that is being checked
+ * @param state {State} Plugin state
+ * @returns {boolean} Whether the node is a compiled vanillaCss
+ */
+export const isCompiledVanillaCssCallExpression = (
+  node: t.Node,
+  state: State
+): node is t.CallExpression =>
+  t.isCallExpression(node) &&
+  t.isIdentifier(node.callee) &&
+  !!state.compiledImports?.vanillaCss?.includes(node.callee.name);
+
+/**
  * Returns `true` if the node is using `keyframes` from `@compiled/react` as a tagged template expression
  *
  * @param node {t.Node} The node that is being checked

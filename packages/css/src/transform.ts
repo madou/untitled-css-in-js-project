@@ -9,6 +9,7 @@ import { discardDuplicates } from './plugins/discard-duplicates';
 import { discardEmptyRules } from './plugins/discard-empty-rules';
 import { expandShorthands } from './plugins/expand-shorthands';
 import { extractStyleSheets } from './plugins/extract-stylesheets';
+import { groupGlobalRules } from './plugins/global-css';
 import { increaseSpecificity } from './plugins/increase-specificity';
 import { normalizeCSS } from './plugins/normalize-css';
 import { parentOrphanedPseudos } from './plugins/parent-orphaned-pseudos';
@@ -31,11 +32,11 @@ export interface TransformOpts {
  */
 export const transformCss = (
   css: string,
-  opts: TransformOpts
+  opts: TransformOpts,
+  isGlobal = false
 ): { sheets: string[]; classNames: string[] } => {
   const sheets: string[] = [];
   const classNames: string[] = [];
-
   try {
     const result = postcss([
       discardDuplicates(),
@@ -47,11 +48,22 @@ export const transformCss = (
       }),
       ...normalizeCSS(opts),
       expandShorthands(),
-      atomicifyRules({
-        classNameCompressionMap: opts.classNameCompressionMap,
-        callback: (className: string) => classNames.push(className),
-        classHashPrefix: opts.classHashPrefix,
-      }),
+      ...(isGlobal
+        ? [
+            groupGlobalRules({
+              callback: (className: string) => classNames.push(className),
+            }),
+          ]
+        : []),
+      ...(!isGlobal
+        ? [
+            atomicifyRules({
+              classNameCompressionMap: opts.classNameCompressionMap,
+              callback: (className: string) => classNames.push(className),
+              classHashPrefix: opts.classHashPrefix,
+            }),
+          ]
+        : []),
       ...(opts.increaseSpecificity ? [increaseSpecificity()] : []),
       sortAtomicStyleSheet({
         sortAtRulesEnabled: opts.sortAtRules,

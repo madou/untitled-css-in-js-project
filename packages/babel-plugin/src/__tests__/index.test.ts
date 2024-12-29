@@ -406,4 +406,75 @@ describe('babel plugin', () => {
 
     expect(actual).toInclude('import { ac, ix, CC, CS } from "@compiled/react/runtime"');
   });
+
+  it.only('should process cssMap even without a react component referencing the map', () => {
+    const actual = transform(
+      `
+        import {cssMap, globalCss} from '@compiled/react';
+
+        const styles = cssMap({
+          base: {
+            color: 'red',
+            fontWeight: 'bold',
+            '.ProseMirror hr': {
+              background: 'red',
+            }
+          },
+          icon: {
+            color: 'red',
+            fontWeight: 'bold',
+            '.ProseMirror .icon': {
+              background: 'red',
+            }
+          }
+        }, {global: true});
+
+        const styles2 = cssMap({
+          base: {
+            display: 'block',
+            background: 'red',
+            color: 'red',
+            fontWeight: 'bold',
+            userSelect: 'none',
+          }
+        });
+
+        globalCss([styles.base]);
+
+        <div css={styles2.base}></div>
+      `
+    );
+    expect(actual).toIncludeMultiple([
+      '._3wo5z1{color:red;font-weight:bold}',
+      '._3wo5z1 .ProseMirror hr{background-color:red}',
+      '._196cdez{color:red;font-weight:bold}',
+      '._196cdez .ProseMirror .icon{background-color:red}',
+    ]);
+  });
+
+  it.only('should process cssMap even without a react component referencing the map and support autoprefix', () => {
+    const actual = transform(
+      `
+        import {cssMap, globalCss} from '@compiled/react';
+
+        const styles = cssMap({
+          base: {
+            color: 'red',
+            fontWeight: 'bold',
+            userSelect: 'none',
+            '.ProseMirror hr': {
+              userSelect: 'none',
+              background: 'red',
+            }
+          }
+        }, {global: true});
+
+        globalCss([styles.base]);
+      `
+    );
+    expect(actual).toIncludeMultiple([
+      '._170jb0f{color:red;font-weight:bold;-webkit-user-select:none;-moz-user-select:none;user-select:none}',
+      '._170jb0f .ProseMirror hr{-webkit-user-select:none;-moz-user-select:none;user-select:none;background-color:red}',
+    ]);
+  });
 });

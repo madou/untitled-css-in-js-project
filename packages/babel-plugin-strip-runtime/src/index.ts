@@ -12,6 +12,8 @@ import type { PluginPass, PluginOptions, BabelFileMetadata } from './types';
 import { isAutomaticRuntime } from './utils/is-automatic-runtime';
 import { isCCComponent } from './utils/is-cc-component';
 import { isCreateElement } from './utils/is-create-element';
+import { isInjectCompiledCss } from './utils/is-inject-css';
+import { isInjectGlobalCss } from './utils/is-inject-global-css';
 import { removeStyleDeclarations } from './utils/remove-style-declarations';
 import { toURIComponent } from './utils/to-uri-component';
 
@@ -22,6 +24,7 @@ export default declare<PluginPass>((api) => {
     name: '@compiled/babel-plugin-strip-runtime',
     pre() {
       this.styleRules = [];
+      this.global = false;
     },
     visitor: {
       Program: {
@@ -60,7 +63,9 @@ export default declare<PluginPass>((api) => {
 
           if (this.opts.extractStylesToDirectory && this.styleRules.length > 0) {
             // Build and sanitize filename of the css file
-            const cssFilename = `${parse(filename).name}.compiled.css`;
+            const cssFilename = this.global
+              ? `${parse(filename).name}.global.css`
+              : `${parse(filename).name}.compiled.css`;
 
             if (!file.opts.generatorOpts?.sourceFileName) {
               throw new Error(`Source filename was not defined`);
@@ -104,7 +109,10 @@ export default declare<PluginPass>((api) => {
       },
 
       ImportSpecifier(path) {
-        if (t.isIdentifier(path.node.imported) && ['CC', 'CS'].includes(path.node.imported.name)) {
+        if (
+          t.isIdentifier(path.node.imported) &&
+          ['CC', 'CS', 'injectGlobalCss', 'injectCompiledCss'].includes(path.node.imported.name)
+        ) {
           path.remove();
         }
       },
@@ -156,6 +164,32 @@ export default declare<PluginPass>((api) => {
           // All done! Let's replace this node with the user land child.
           path.node.leadingComments = null;
           path.replaceWith(nodeToReplace);
+          return;
+        }
+
+        if (isInjectCompiledCss(path.node) || isInjectGlobalCss(path.node)) {
+          const [children] = path.get('arguments');
+
+          if (children.node.type !== 'ArrayExpression') {
+            return;
+          }
+
+          const globalStyleRules: string[] = [];
+          children.node.elements.forEach((element) => {
+            if (!t.isStringLiteral(element)) {
+              return;
+            }
+            globalStyleRules.push(element.value);
+          });
+
+          if (globalStyleRules.length > 0) {
+            if (isInjectGlobalCss(path.node)) {
+              this.global = true;
+            }
+            this.styleRules.push(...globalStyleRules);
+          }
+          // remove injectGlobalCss() call from the code
+          path.remove();
           return;
         }
 

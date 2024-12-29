@@ -21,6 +21,7 @@ import type { State } from './types';
 import { appendRuntimeImports } from './utils/append-runtime-imports';
 import { buildCodeFrameError } from './utils/ast';
 import { Cache } from './utils/cache';
+import { buildCss } from './utils/css-builders';
 import {
   isCompiledCSSCallExpression,
   isCompiledCSSTaggedTemplateExpression,
@@ -29,9 +30,12 @@ import {
   isCompiledStyledCallExpression,
   isCompiledStyledTaggedTemplateExpression,
   isCompiledCSSMapCallExpression,
+  isCompiledVanillaCssCallExpression,
 } from './utils/is-compiled';
 import { isTransformedJsxFunction } from './utils/is-jsx-function';
 import { normalizePropsUsage } from './utils/normalize-props-usage';
+import { transformCssItems } from './utils/transform-css-items';
+import { visitVanillaCssPath } from './vanilla-css';
 import { visitXcssPropPath } from './xcss-prop';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -272,7 +276,17 @@ export default declare<State>((api) => {
             return;
           }
 
-          (['styled', 'ClassNames', 'css', 'keyframes', 'cssMap'] as const).forEach((apiName) => {
+          (
+            [
+              'styled',
+              'ClassNames',
+              'css',
+              'keyframes',
+              'cssMap',
+              'globalCss',
+              'vanillaCss',
+            ] as const
+          ).forEach((apiName) => {
             if (
               state.compiledImports &&
               t.isIdentifier(specifier.node?.imported) &&
@@ -311,8 +325,15 @@ Reasons this might happen:
             path.parentPath
           );
         }
+
         if (isCompiledCSSMapCallExpression(path.node, state)) {
           visitCssMapPath(path, { context: 'root', state, parentPath: path });
+          return;
+        }
+
+        if (isCompiledVanillaCssCallExpression(path.node, state)) {
+          // @ts-expect-error
+          visitVanillaCssPath(path, { context: 'root', state, parentPath: path });
           return;
         }
 
@@ -344,6 +365,19 @@ Reasons this might happen:
         if (isCompiledComponent) {
           visitStyledPath(path, { context: 'root', state, parentPath: path });
           return;
+        }
+
+        // @ts-expect-error
+        if (t.isCallExpression(path.node) && path.node.callee.name === `globalCss`) {
+          const meta = { context: 'root', state, parentPath: path };
+          // @ts-expect-error
+          const cssOutput = buildCss(path.node.arguments[0], meta);
+          // @ts-expect-error
+          const { sheets } = transformCssItems(cssOutput.css, meta);
+          const newNode = t.callExpression(t.identifier('injectGlobalCss'), [
+            t.arrayExpression(sheets.map((item) => t.stringLiteral(item))),
+          ]);
+          path.parentPath.replaceWith(newNode);
         }
       },
       JSXElement(path, state) {

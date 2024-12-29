@@ -53,12 +53,34 @@ export const visitCssMapPath = (
   }
 
   // We need to ensure cssMap receives only one argument.
-  if (path.node.arguments.length !== 1) {
+  if (path.node.arguments.length > 2) {
     throw buildCodeFrameError(
       createErrorMessage(ErrorMessages.NUMBER_OF_ARGUMENT),
       path.node,
       meta.parentPath
     );
+  }
+
+  let isGlobalCssMap = false;
+  if (path.node.arguments.length === 2) {
+    const arg = path.node.arguments[1];
+    if (
+      !t.isObjectExpression(arg) ||
+      arg.properties.length > 1 ||
+      // @ts-ignore
+      !t.isIdentifier(arg.properties[0].key) ||
+      // @ts-ignore
+      !t.isBooleanLiteral(arg.properties[0].value)
+    ) {
+      throw buildCodeFrameError(
+        createErrorMessage('Invalid argument for cssMap options'),
+        path.node,
+        meta.parentPath
+      );
+    }
+
+    // @ts-ignore
+    isGlobalCssMap = arg.properties[0].value.value;
   }
 
   // We need to ensure the argument is an objectExpression.
@@ -95,7 +117,7 @@ export const visitCssMapPath = (
           );
         }
 
-        const { sheets, classNames } = transformCssItems(css, meta);
+        const { sheets, classNames } = transformCssItems(css, meta, isGlobalCssMap);
         totalSheets.push(...sheets);
 
         if (classNames.length > 1) {
