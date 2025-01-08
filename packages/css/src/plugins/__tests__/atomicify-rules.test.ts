@@ -138,7 +138,8 @@ describe('atomicify rules', () => {
 
   it('should callback with created class names', () => {
     const classes: string[] = [];
-    const callback = (className: string) => {
+    // TODO: test property parameter
+    const callback = ({ className }: { className: string }) => {
       classes.push(className);
     };
 

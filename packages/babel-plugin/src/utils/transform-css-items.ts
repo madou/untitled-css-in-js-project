@@ -20,6 +20,7 @@ const transformCssItem = (
 ): {
   sheets: string[];
   classExpression?: t.Expression;
+  properties: string[];
 } => {
   switch (item.type) {
     case 'conditional':
@@ -30,7 +31,7 @@ const transformCssItem = (
       const hasAlternateSheets = Boolean(alternate.sheets.length);
 
       if (!hasConsequentSheets && !hasAlternateSheets) {
-        return { sheets: [], classExpression: undefined };
+        return { sheets: [], classExpression: undefined, properties: [] };
       }
 
       if (!hasConsequentSheets || !hasAlternateSheets) {
@@ -45,6 +46,8 @@ const transformCssItem = (
             hasConsequentSheets ? item.test : t.unaryExpression('!', item.test),
             classExpression || defaultExpression
           ),
+          // TODO: verify whether this is correct
+          properties: [...consequent.properties, ...alternate.properties],
         };
       }
 
@@ -55,6 +58,7 @@ const transformCssItem = (
           consequent.classExpression || defaultExpression,
           alternate.classExpression || defaultExpression
         ),
+        properties: [...consequent.properties, ...alternate.properties],
       };
 
     case 'logical':
@@ -72,12 +76,15 @@ const transformCssItem = (
             ).join(' ')
           )
         ),
+        properties: logicalCss.properties,
       };
 
     case 'map':
       return {
         sheets: meta.state.cssMap[item.name],
         classExpression: item.expression,
+        // TODO: determine what the value of this should be
+        properties: [],
       };
 
     default:
@@ -90,6 +97,7 @@ const transformCssItem = (
       return {
         sheets: css.sheets,
         classExpression: className.trim() ? t.stringLiteral(className) : undefined,
+        properties: css.properties,
       };
   }
 };
@@ -103,9 +111,10 @@ const transformCssItem = (
 export const transformCssItems = (
   cssItems: CssItem[],
   meta: Metadata
-): { sheets: string[]; classNames: t.Expression[] } => {
+): { sheets: string[]; classNames: t.Expression[]; properties: string[] } => {
   const sheets: string[] = [];
   const classNames: t.Expression[] = [];
+  const properties: string[] = [];
 
   cssItems.forEach((item) => {
     const result = transformCssItem(item, meta);
@@ -114,9 +123,11 @@ export const transformCssItems = (
     if (result.classExpression) {
       classNames.push(result.classExpression);
     }
+
+    properties.push(...result.properties);
   });
 
-  return { sheets, classNames };
+  return { sheets, classNames, properties };
 };
 
 /**

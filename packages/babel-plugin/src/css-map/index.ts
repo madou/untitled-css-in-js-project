@@ -5,6 +5,7 @@ import type { Metadata } from '../types';
 import { buildCodeFrameError } from '../utils/ast';
 import { buildCss } from '../utils/css-builders';
 import { ErrorMessages, createErrorMessage, errorIfNotValidObjectProperty } from '../utils/css-map';
+import { errorIfInvalidProperties } from '../utils/error-if-invalid-properties';
 import { transformCssItems } from '../utils/transform-css-items';
 
 import { mergeExtendedSelectorsIntoProperties } from './process-selectors';
@@ -95,8 +96,12 @@ export const visitCssMapPath = (
           );
         }
 
-        const { sheets, classNames } = transformCssItems(css, meta);
+        const { sheets, classNames, properties } = transformCssItems(css, meta);
         totalSheets.push(...sheets);
+
+        errorIfInvalidProperties(properties);
+        // TODO: test this
+        console.log('visitCssMapPath', properties);
 
         if (classNames.length > 1) {
           throw buildCodeFrameError(

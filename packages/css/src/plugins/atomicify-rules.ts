@@ -4,7 +4,7 @@ import { rule } from 'postcss';
 
 interface PluginOpts {
   classNameCompressionMap?: Record<string, string>;
-  callback?: (className: string) => void;
+  callback?: ({ className, property }: { className: string; property: string }) => void;
   selectors?: string[];
   atRule?: string;
   parentNode?: Container;
@@ -110,7 +110,7 @@ const buildAtomicSelector = (node: Declaration, opts: PluginOpts) => {
     }
 
     if (opts.callback) {
-      opts.callback(fullClassName);
+      opts.callback({ className: fullClassName, property: node.prop });
     }
   });
 

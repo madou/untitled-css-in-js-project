@@ -6,6 +6,7 @@ import { unique } from '@compiled/utils';
 import type { Metadata } from '../types';
 
 import { buildCssVariables } from './build-css-variables';
+import { errorIfInvalidProperties } from './error-if-invalid-properties';
 import { getJSXAttribute } from './get-jsx-attribute';
 import { getRuntimeClassNameLibrary } from './get-runtime-class-name-library';
 import { hoistSheet } from './hoist-sheet';
@@ -70,7 +71,11 @@ export const buildCompiledComponent = (
   cssOutput: CSSOutput,
   meta: Metadata
 ): t.Node => {
-  const { sheets, classNames } = transformCssItems(cssOutput.css, meta);
+  const { sheets, classNames, properties } = transformCssItems(cssOutput.css, meta);
+
+  errorIfInvalidProperties(properties);
+  // TODO: write tests for this now that we know that it works
+  console.log('buildCompiledComponent', properties);
 
   const [classNameAttribute] = getJSXAttribute(node, 'className');
 

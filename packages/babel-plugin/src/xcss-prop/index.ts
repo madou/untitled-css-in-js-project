@@ -5,6 +5,7 @@ import type { Metadata } from '../types';
 import { buildCodeFrameError, getPathOfNode } from '../utils/ast';
 import { compiledTemplate } from '../utils/build-compiled-component';
 import { buildCss } from '../utils/css-builders';
+import { errorIfInvalidProperties } from '../utils/error-if-invalid-properties';
 import { transformCssItems } from '../utils/transform-css-items';
 
 function getJsxAttributeExpressionContainer(path?: NodePath<t.JSXAttribute>) {
@@ -83,7 +84,11 @@ export const visitXcssPropPath = (path: NodePath<t.JSXOpeningElement>, meta: Met
     staticObjectInvariant(container.expression, meta);
 
     const cssOutput = buildCss(container.expression, meta);
-    const { sheets, classNames } = transformCssItems(cssOutput.css, meta);
+    const { sheets, classNames, properties } = transformCssItems(cssOutput.css, meta);
+
+    errorIfInvalidProperties(properties);
+    // TODO: test this
+    console.log('visitXcssPropPath', properties);
 
     switch (classNames.length) {
       case 1:
