@@ -18,6 +18,7 @@ import { pickFunctionBody } from './ast';
 import { buildCssVariables } from './build-css-variables';
 import { compressClassNamesForRuntime } from './compress-class-names-for-runtime';
 import { getItemCss } from './css-builders';
+import { errorIfInvalidProperties } from './error-if-invalid-properties';
 import { getRuntimeClassNameLibrary } from './get-runtime-class-name-library';
 import { hoistSheet } from './hoist-sheet';
 import { applySelectors, transformCssItems } from './transform-css-items';
@@ -262,6 +263,18 @@ export const buildStyledComponent = (tag: Tag, cssOutput: CSSOutput, meta: Metad
     ],
     ...conditionalCssOutput.classNames,
   ];
+
+  // TODO: verify whether this is actually correct for anything beyond the most basic case
+  //
+  // NOTE: Limitation - cannot handle styled(OtherComponent)({ ... }) - given that this is processed at runtime, I believe this would require a runtime check in ax()?
+  const properties = [
+    ...uniqueUnconditionalCssOutput.properties,
+    ...conditionalCssOutput.properties,
+  ];
+
+  errorIfInvalidProperties(properties);
+  // TODO: write tests for this now that we know that the basic case works
+  console.log('buildStyledComponent', properties);
 
   return styledTemplate(
     {

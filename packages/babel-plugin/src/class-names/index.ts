@@ -6,6 +6,7 @@ import { buildCodeFrameError, pickFunctionBody } from '../utils/ast';
 import { compiledTemplate } from '../utils/build-compiled-component';
 import { buildCssVariables } from '../utils/build-css-variables';
 import { buildCss } from '../utils/css-builders';
+import { errorIfInvalidProperties } from '../utils/error-if-invalid-properties';
 import { getRuntimeClassNameLibrary } from '../utils/get-runtime-class-name-library';
 import { resolveIdentifierComingFromDestructuring } from '../utils/resolve-binding';
 import { transformCssItems } from '../utils/transform-css-items';
@@ -134,7 +135,11 @@ export const visitClassNamesPath = (path: NodePath<t.JSXElement>, meta: Metadata
       }
 
       const builtCss = buildCss(styles, meta);
-      const { sheets, classNames } = transformCssItems(builtCss.css, meta);
+      const { sheets, classNames, properties } = transformCssItems(builtCss.css, meta);
+
+      errorIfInvalidProperties(properties);
+      // TODO: test this
+      console.log('visitClassNamePath', properties);
 
       collectedVariables.push(...builtCss.variables);
       collectedSheets.push(...sheets);

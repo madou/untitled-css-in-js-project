@@ -32,9 +32,10 @@ export interface TransformOpts {
 export const transformCss = (
   css: string,
   opts: TransformOpts
-): { sheets: string[]; classNames: string[] } => {
+): { sheets: string[]; classNames: string[]; properties: string[] } => {
   const sheets: string[] = [];
   const classNames: string[] = [];
+  const properties: string[] = [];
 
   try {
     const result = postcss([
@@ -58,8 +59,12 @@ export const transformCss = (
       ...normalizeCSS(opts),
       expandShorthands(),
       atomicifyRules({
+        // TODO: double check that class name compression doesn't affect properties array
         classNameCompressionMap: opts.classNameCompressionMap,
-        callback: (className: string) => classNames.push(className),
+        callback: ({ className, property }) => {
+          properties.push(property);
+          classNames.push(className);
+        },
         classHashPrefix: opts.classHashPrefix,
       }),
       ...(opts.increaseSpecificity ? [increaseSpecificity()] : []),
@@ -80,6 +85,7 @@ export const transformCss = (
     return {
       sheets,
       classNames: unique(classNames),
+      properties,
     };
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : e;
