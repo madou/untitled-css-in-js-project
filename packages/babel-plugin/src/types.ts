@@ -138,6 +138,22 @@ export interface State extends PluginPass {
     cssMap?: string[];
   };
 
+  /**
+   * Returns the name of the cloneElement import specifier if it is imported.
+   * If an alias is used, the alias will be returned.
+   *
+   * E.g:
+   *
+   * ```
+   * import { cloneElement as myCloneElement } from 'react';
+   * ```
+   *
+   * Returns `myCloneElement`.
+   */
+  reactImports?: {
+    cloneElement?: string;
+  };
+
   usesXcss?: boolean;
 
   importedCompiledImports?: {

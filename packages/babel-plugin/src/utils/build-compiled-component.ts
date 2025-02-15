@@ -142,3 +142,61 @@ export const buildCompiledComponent = (
 
   return compiledTemplate(node, sheets, meta);
 };
+
+/**
+ * Accepts a cloneElement node and returns a Compiled Component AST.
+ *
+ * @param node Originating cloneElement node
+ * @param cssOutput CSS and variables to place onto the component
+ * @param meta {Metadata} Useful metadata that can be used during the transformation
+ */
+export const buildCompiledCloneElement = (
+  node: t.CallExpression,
+  cssOutput: CSSOutput,
+  meta: Metadata
+): t.Node => {
+  const { sheets, classNames } = transformCssItems(cssOutput.css, meta);
+
+  const props = node.arguments[1];
+
+  // TODO: This is a temporary fix to prevent the plugin from crashing when the second argument of cloneElement is not an object expression.
+  if (!t.isObjectExpression(props)) {
+    throw new Error('Second argument of cloneElement must be an object expression.');
+  }
+
+  const [classNameProperty] = props.properties.filter(
+    (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key) && prop.key.name === 'className'
+  );
+
+  if (
+    classNameProperty &&
+    t.isObjectProperty(classNameProperty) &&
+    t.isIdentifier(classNameProperty.value)
+  ) {
+    const values: t.Expression[] = classNames.concat(classNameProperty.value);
+
+    classNameProperty.value = t.callExpression(t.identifier(getRuntimeClassNameLibrary(meta)), [
+      t.arrayExpression(values),
+    ]);
+  } else {
+    props.properties.push(
+      t.objectProperty(
+        t.identifier('className'),
+        t.callExpression(t.identifier(getRuntimeClassNameLibrary(meta)), [
+          t.arrayExpression(classNames),
+        ])
+      )
+    );
+  }
+
+  // remove css prop from props object
+  const cssPropIndex = props.properties.findIndex(
+    (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key) && prop.key.name === 'css'
+  );
+
+  if (cssPropIndex !== -1) {
+    props.properties.splice(cssPropIndex, 1);
+  }
+
+  return compiledTemplate(node, sheets, meta);
+};
