@@ -19,9 +19,9 @@ like so:
 
 <!-- prettier-ignore -->
 ```html
-<style>._k48pni7l{font-weight:600}</style>
+<style data-cmpld=true>._k48pni7l{font-weight:600}</style>
 <div class="_k48pni7l">
-  <style>._syaz18rw{color:#ff5630}</style>
+  <style data-cmpld=true>._syaz18rw{color:#ff5630}</style>
   <div class="_syaz18rw">hello world</div>
 </div>
 ```
@@ -40,9 +40,9 @@ resulting in less styles rendered initially:
 
 <!-- prettier-ignore -->
 ```html
-<style>._k48pni7l{margin-top:24px}</style>
+<style data-cmpld=true>._k48pni7l{margin-top:24px}</style>
 <div class="_k48pni7l">
-  <style>._syaz18rw{color:#ff5630}</style>
+  <style data-cmpld=true>._syaz18rw{color:#ff5630}</style>
   <div class="_k48pni7l _syaz18rw">hello world</div>
   <div class="_k48pni7l _syaz18rw">hello world</div>
   <div class="_k48pni7l _syaz18rw">hello world</div>
@@ -83,7 +83,10 @@ Here we target the `:first-child` element.
 But the text isn't red before the JavaScript has executed!
 
 To workaround this we can use a different selector,
-either `:first-of-type` or explicitly marking the first child with a [data attribute](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).
+by using one of the following:
+ - `:first-of-type`
+ - explicitly marking the first child with a [data attribute](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes)
+ - explicitly excluding the inline `style` elements with `:not(style[data-cmpld])`
 
 ```jsx
 <div css={{
