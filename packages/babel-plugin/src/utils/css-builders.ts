@@ -397,7 +397,18 @@ const extractConditionalExpression = (node: t.ConditionalExpression, meta: Metad
       variables.push(...cssOutput.variables);
 
       const mergedOutput = mergeSubsequentUnconditionalCssItems(cssOutput.css);
-      if (mergedOutput.length > 1) {
+      const sheetItems: SheetCssItem[] = [];
+      const nonSheetItems: Exclude<CssItem, SheetCssItem>[] = [];
+
+      for (const cssItem of mergedOutput) {
+        if (cssItem.type === 'sheet') {
+          sheetItems.push(cssItem);
+        } else {
+          nonSheetItems.push(cssItem);
+        }
+      }
+
+      if (nonSheetItems.length > 1) {
         // Each branch should evaluate down to a single logical or unconditional CSS Item.
         throw buildCodeFrameError(
           'Conditional branch contains unexpected expression',
@@ -405,24 +416,31 @@ const extractConditionalExpression = (node: t.ConditionalExpression, meta: Metad
           meta.parentPath
         );
       }
-      return mergedOutput[0];
+
+      return { sheetItems, nonSheetItems: nonSheetItems[0] };
     }
 
     return undefined;
   });
 
-  if (consequentCss && alternateCss) {
-    css.push({
+  if (consequentCss?.nonSheetItems && alternateCss?.nonSheetItems) {
+    css.push(...consequentCss.sheetItems, ...alternateCss.sheetItems, {
       type: 'conditional',
       test: node.test,
-      consequent: consequentCss,
-      alternate: alternateCss,
+      consequent: consequentCss.nonSheetItems,
+      alternate: alternateCss.nonSheetItems,
     });
   } else if (consequentCss) {
-    // convert single-sided conditional into logical statements
-    css.push(...getLogicalItemFromConditionalExpression([consequentCss], node, 'consequent'));
+    css.push(
+      ...consequentCss.sheetItems,
+      // convert single-sided conditional into logical statements
+      ...getLogicalItemFromConditionalExpression([consequentCss.nonSheetItems], node, 'consequent')
+    );
   } else if (alternateCss) {
-    css.push(...getLogicalItemFromConditionalExpression([alternateCss], node, 'alternate'));
+    css.push(
+      ...alternateCss.sheetItems,
+      ...getLogicalItemFromConditionalExpression([alternateCss.nonSheetItems], node, 'alternate')
+    );
   }
 
   return { css, variables };
