@@ -44,7 +44,7 @@ it('transforms assets with compiled and extraction babel plugins', async () => {
     'utf8'
   );
 
-  const css = /<style>(.*?)<\/style>/.exec(outputHtml)?.pop();
+  const css = /<style title="compiled">(.*?)<\/style>/.exec(outputHtml)?.pop();
 
   if (!css) throw new Error('No CSS is found.');
 
