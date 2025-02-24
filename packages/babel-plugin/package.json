@@ -36,9 +36,9 @@
   "devDependencies": {
     "@compiled-private/module-a": "^0.1.0",
     "@compiled/benchmark": "1.1.0",
-    "@types/babel__core": "^7.20.3",
-    "@types/benchmark": "^2.1.4",
-    "@types/resolve": "^1.20.4",
+    "@types/babel__core": "^7.20.5",
+    "@types/benchmark": "^2.1.5",
+    "@types/resolve": "^1.20.6",
     "benchmark": "^2.1.4",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.2",
