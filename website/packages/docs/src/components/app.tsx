@@ -81,7 +81,7 @@ section: My section
 
 const getEditUrl = () => {
   const name = location.pathname.split('/')[2] || 'installation';
-  return `https://github.com/compiled/compiled-website/tree/master/packages/docs/src/pages/${name}.mdx`;
+  return `https://github.com/atlassian-labs/compiled/tree/master/website/packages/docs/src/pages/${name}.mdx`;
 };
 
 const getPage = (slug: string) => {
