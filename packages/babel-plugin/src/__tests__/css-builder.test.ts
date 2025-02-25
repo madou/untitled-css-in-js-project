@@ -150,4 +150,110 @@ describe('css builder', () => {
       "
     `);
   });
+
+  it('works with css map', () => {
+    const actual = transform(`
+      import { cssMap } from '@compiled/react';
+
+      const styles = cssMap({ red: { color: 'red' }, blue: { color: 'blue' } });
+
+      function Component({ color }) {
+        return <div css={styles[color]} />
+      }
+    `);
+
+    expect(actual).toMatchInlineSnapshot(`
+      "import * as React from "react";
+      import { ax, ix, CC, CS } from "@compiled/react/runtime";
+      const _2 = "._syaz13q2{color:blue}";
+      const _ = "._syaz5scu{color:red}";
+      const styles = {
+        red: "_syaz5scu",
+        blue: "_syaz13q2",
+      };
+      function Component({ color }) {
+        return (
+          <CC>
+            <CS>{[_, _2]}</CS>
+            {<div className={ax([styles[color]])} />}
+          </CC>
+        );
+      }
+      "
+    `);
+  });
+
+  it('works in spite of a style override', () => {
+    const actual = transform(`
+      import { css } from '@compiled/react';
+
+      const styles = css({ color: ({ color }) => color });
+
+      function Component({ color }) {
+        return <div style={{ background: 'red' }} css={styles} />
+      }
+    `);
+
+    expect(actual).toMatchInlineSnapshot(`
+      "import * as React from "react";
+      import { ax, ix, CC, CS } from "@compiled/react/runtime";
+      const _ = "._syaz1cj8{color:var(--_xexnhp)}";
+      const styles = null;
+      function Component({ color }) {
+        return (
+          <CC>
+            <CS>{[_]}</CS>
+            {
+              <div
+                className={ax(["_syaz1cj8"])}
+                style={{
+                  background: "red",
+                  "--_xexnhp": ix((__cmplp) => __cmplp.color),
+                }}
+              />
+            }
+          </CC>
+        );
+      }
+      "
+    `);
+  });
+
+  it('works when there is a clear member expression', () => {
+    const actual = transform(`
+      import { css } from '@compiled/react';
+
+      const styles = {
+        test: {
+          red: css({ color: 'red' }),
+          blue: css({ color: 'blue' }),
+        },
+      };
+
+      function Component({ color }) {
+        return <div css={styles.test.red} />
+      }
+    `);
+
+    expect(actual).toMatchInlineSnapshot(`
+      "import * as React from "react";
+      import { ax, ix, CC, CS } from "@compiled/react/runtime";
+      const _ = "._syaz5scu{color:red}";
+      const styles = {
+        test: {
+          red: null,
+          blue: null,
+        },
+      };
+      function Component({ color }) {
+        return (
+          <CC>
+            <CS>{[_]}</CS>
+            {<div className={ax(["_syaz5scu"])} />}
+          </CC>
+        );
+      }
+      "
+    `);
+  });
 });
