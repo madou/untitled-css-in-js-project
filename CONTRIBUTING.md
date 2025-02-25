@@ -108,7 +108,7 @@ yarn test <filter> --watch
 
 Looking at tests first is generally the best way to get started.
 
-- Run a specific test file: `yarn test <filename> --watch`
+- Run a specific test file: `yarn test <filename> --watch` OR `yarn test:parcel <filename>` if the test file name ends with `parceltest.{ts,tsx}`
 - Run tests related to a package `yarn test:packageName --watch`
 - Update snapshot tests after implementing a code change: `yarn test <filter> --watch --updateSnapshot`
 
