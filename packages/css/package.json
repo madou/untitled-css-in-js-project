@@ -24,13 +24,13 @@
   },
   "dependencies": {
     "@compiled/utils": "^0.13.1",
-    "autoprefixer": "^10.4.14",
+    "autoprefixer": "^10.4.20",
     "cssnano-preset-default": "^5.2.14",
-    "postcss": "^8.4.31",
-    "postcss-discard-duplicates": "^6.0.0",
+    "postcss": "^8.5.3",
+    "postcss-discard-duplicates": "^6.0.3",
     "postcss-nested": "^5.0.6",
     "postcss-normalize-whitespace": "^5.1.1",
-    "postcss-selector-parser": "^6.0.13",
+    "postcss-selector-parser": "^6.1.2",
     "postcss-values-parser": "^6.0.2"
   },
   "devDependencies": {
