@@ -80,7 +80,7 @@
     "@fixture/strict-api-test": "*",
     "@testing-library/react": "^12.1.5",
     "@types/jsdom": "^16.2.15",
-    "@types/react-dom": "^17.0.22",
+    "@types/react-dom": "^17.0.26",
     "expect-type": "^0.17.3",
     "jsdom": "^19.0.0",
     "react": "^17.0.2",

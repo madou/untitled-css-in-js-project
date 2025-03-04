@@ -34,7 +34,7 @@
     "@parcel/core": "^2.8.3",
     "@parcel/fs": "^2.8.3",
     "@parcel/types": "^2.8.3",
-    "@types/babel__core": "^7.20.3",
+    "@types/babel__core": "^7.20.5",
     "prettier": "^2.8.8",
     "source-map": "^0.7.4"
   },
