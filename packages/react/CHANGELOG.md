@@ -1,5 +1,11 @@
 # @compiled/react
 
+## 0.18.3
+
+### Patch Changes
+
+- baa173c: Fix type definition for CSS properties with string values.
+
 ## 0.18.2
 
 ### Patch Changes
